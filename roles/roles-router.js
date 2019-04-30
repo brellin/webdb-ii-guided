@@ -1,18 +1,48 @@
+const knex = require('knex')
 const router = require('express').Router();
 
+const knexConfig = {
+  client: 'sqlite3',
+  connection: {
+    filename: './data/roles_db.db3'
+  },
+  useNullAsDefault: true
+}
+const db = knex(knexConfig)
+
 router.get('/', (req, res) => {
-  // get the roles from the database
-  res.send('Write code to retrieve all roles');
+  db('roles')
+    .then(roles => res.status(200).json(roles))
+    .catch(err => console.log(err))
 });
 
 router.get('/:id', (req, res) => {
-  // retrieve a role by id
-  res.send('Write code to retrieve a role by id');
+  const { id } = req.params
+  db('roles')
+    .where({ id: id })
+    .first()
+    .then(role => {
+      role ?
+        res.status(200).json(role)
+        :
+        res.status(404).json({
+          message: 'No role exists with the id provided'
+        })
+    })
+    .catch(err => {
+      res.status(500).json(err)
+    })
 });
 
 router.post('/', (req, res) => {
-  // add a role to the database
-  res.send('Write code to add a role');
+  db('roles')
+    .insert(req.body, 'id')
+    .then(result => {
+      res.status(200).json(result)
+    })
+    .catch(err => {
+      res.status(500).json(err)
+    })
 });
 
 router.put('/:id', (req, res) => {
